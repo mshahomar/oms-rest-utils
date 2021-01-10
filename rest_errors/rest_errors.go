@@ -1,6 +1,8 @@
 package rest_errors
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -12,10 +14,10 @@ type RestErr interface {
 	Causes() []interface{}
 }
 type restErr struct {
-	ErrMessage string `json:"message"`
-	ErrStatus int `json:"status"`
-	ErrError string `json:"error"`
-	ErrCauses []interface{} `json:"causes"`
+	ErrMessage string        `json:"message"`
+	ErrStatus  int           `json:"status"`
+	ErrError   string        `json:"error"`
+	ErrCauses  []interface{} `json:"causes"`
 }
 
 func (r restErr) Message() string {
@@ -78,3 +80,10 @@ func NewUnauthorizedError(message string) RestErr {
 	}
 }
 
+func NewRestErrorFromBytes(bytes []byte) (RestErr, error) {
+	var apiErr restErr
+	if err := json.Unmarshal(bytes, &apiErr); err != nil {
+		return nil, errors.New("invalid json")
+	}
+	return apiErr, nil
+}
